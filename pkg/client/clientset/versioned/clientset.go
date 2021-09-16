@@ -23,6 +23,7 @@ import (
 
 	triggersv1alpha1 "github.com/tektoncd/triggers/pkg/client/clientset/versioned/typed/triggers/v1alpha1"
 	triggersv1beta1 "github.com/tektoncd/triggers/pkg/client/clientset/versioned/typed/triggers/v1beta1"
+	triggersv1beta2 "github.com/tektoncd/triggers/pkg/client/clientset/versioned/typed/triggers/v1beta2"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -32,6 +33,7 @@ type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	TriggersV1alpha1() triggersv1alpha1.TriggersV1alpha1Interface
 	TriggersV1beta1() triggersv1beta1.TriggersV1beta1Interface
+	TriggersV1beta2() triggersv1beta2.TriggersV1beta2Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -40,6 +42,7 @@ type Clientset struct {
 	*discovery.DiscoveryClient
 	triggersV1alpha1 *triggersv1alpha1.TriggersV1alpha1Client
 	triggersV1beta1  *triggersv1beta1.TriggersV1beta1Client
+	triggersV1beta2  *triggersv1beta2.TriggersV1beta2Client
 }
 
 // TriggersV1alpha1 retrieves the TriggersV1alpha1Client
@@ -50,6 +53,11 @@ func (c *Clientset) TriggersV1alpha1() triggersv1alpha1.TriggersV1alpha1Interfac
 // TriggersV1beta1 retrieves the TriggersV1beta1Client
 func (c *Clientset) TriggersV1beta1() triggersv1beta1.TriggersV1beta1Interface {
 	return c.triggersV1beta1
+}
+
+// TriggersV1beta2 retrieves the TriggersV1beta2Client
+func (c *Clientset) TriggersV1beta2() triggersv1beta2.TriggersV1beta2Interface {
+	return c.triggersV1beta2
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -81,6 +89,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	if err != nil {
 		return nil, err
 	}
+	cs.triggersV1beta2, err = triggersv1beta2.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 
 	cs.DiscoveryClient, err = discovery.NewDiscoveryClientForConfig(&configShallowCopy)
 	if err != nil {
@@ -95,6 +107,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
 	cs.triggersV1alpha1 = triggersv1alpha1.NewForConfigOrDie(c)
 	cs.triggersV1beta1 = triggersv1beta1.NewForConfigOrDie(c)
+	cs.triggersV1beta2 = triggersv1beta2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -105,6 +118,7 @@ func New(c rest.Interface) *Clientset {
 	var cs Clientset
 	cs.triggersV1alpha1 = triggersv1alpha1.New(c)
 	cs.triggersV1beta1 = triggersv1beta1.New(c)
+	cs.triggersV1beta2 = triggersv1beta2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

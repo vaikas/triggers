@@ -26,9 +26,11 @@ import (
 
 	v1alpha1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	v1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
+	v1beta2 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta2"
 	versioned "github.com/tektoncd/triggers/pkg/client/clientset/versioned"
 	typedtriggersv1alpha1 "github.com/tektoncd/triggers/pkg/client/clientset/versioned/typed/triggers/v1alpha1"
 	typedtriggersv1beta1 "github.com/tektoncd/triggers/pkg/client/clientset/versioned/typed/triggers/v1beta1"
+	typedtriggersv1beta2 "github.com/tektoncd/triggers/pkg/client/clientset/versioned/typed/triggers/v1beta2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	unstructured "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -1554,5 +1556,151 @@ func (w *wrapTriggersV1beta1TriggerTemplateImpl) UpdateStatus(ctx context.Contex
 }
 
 func (w *wrapTriggersV1beta1TriggerTemplateImpl) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
+	return nil, errors.New("NYI: Watch")
+}
+
+// TriggersV1beta2 retrieves the TriggersV1beta2Client
+func (w *wrapClient) TriggersV1beta2() typedtriggersv1beta2.TriggersV1beta2Interface {
+	return &wrapTriggersV1beta2{
+		dyn: w.dyn,
+	}
+}
+
+type wrapTriggersV1beta2 struct {
+	dyn dynamic.Interface
+}
+
+func (w *wrapTriggersV1beta2) RESTClient() rest.Interface {
+	panic("RESTClient called on dynamic client!")
+}
+
+func (w *wrapTriggersV1beta2) EventListeners(namespace string) typedtriggersv1beta2.EventListenerInterface {
+	return &wrapTriggersV1beta2EventListenerImpl{
+		dyn: w.dyn.Resource(schema.GroupVersionResource{
+			Group:    "triggers.tekton.dev",
+			Version:  "v1beta2",
+			Resource: "eventlisteners",
+		}),
+
+		namespace: namespace,
+	}
+}
+
+type wrapTriggersV1beta2EventListenerImpl struct {
+	dyn dynamic.NamespaceableResourceInterface
+
+	namespace string
+}
+
+var _ typedtriggersv1beta2.EventListenerInterface = (*wrapTriggersV1beta2EventListenerImpl)(nil)
+
+func (w *wrapTriggersV1beta2EventListenerImpl) Create(ctx context.Context, in *v1beta2.EventListener, opts v1.CreateOptions) (*v1beta2.EventListener, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "triggers.tekton.dev",
+		Version: "v1beta2",
+		Kind:    "EventListener",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).Create(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1beta2.EventListener{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) Delete(ctx context.Context, name string, opts v1.DeleteOptions) error {
+	return w.dyn.Namespace(w.namespace).Delete(ctx, name, opts)
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error {
+	return w.dyn.Namespace(w.namespace).DeleteCollection(ctx, opts, listOpts)
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) Get(ctx context.Context, name string, opts v1.GetOptions) (*v1beta2.EventListener, error) {
+	uo, err := w.dyn.Namespace(w.namespace).Get(ctx, name, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1beta2.EventListener{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) List(ctx context.Context, opts v1.ListOptions) (*v1beta2.EventListenerList, error) {
+	uo, err := w.dyn.Namespace(w.namespace).List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1beta2.EventListenerList{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (result *v1beta2.EventListener, err error) {
+	uo, err := w.dyn.Namespace(w.namespace).Patch(ctx, name, pt, data, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1beta2.EventListener{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) Update(ctx context.Context, in *v1beta2.EventListener, opts v1.UpdateOptions) (*v1beta2.EventListener, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "triggers.tekton.dev",
+		Version: "v1beta2",
+		Kind:    "EventListener",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).Update(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1beta2.EventListener{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) UpdateStatus(ctx context.Context, in *v1beta2.EventListener, opts v1.UpdateOptions) (*v1beta2.EventListener, error) {
+	in.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "triggers.tekton.dev",
+		Version: "v1beta2",
+		Kind:    "EventListener",
+	})
+	uo := &unstructured.Unstructured{}
+	if err := convert(in, uo); err != nil {
+		return nil, err
+	}
+	uo, err := w.dyn.Namespace(w.namespace).UpdateStatus(ctx, uo, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := &v1beta2.EventListener{}
+	if err := convert(uo, out); err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (w *wrapTriggersV1beta2EventListenerImpl) Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error) {
 	return nil, errors.New("NYI: Watch")
 }

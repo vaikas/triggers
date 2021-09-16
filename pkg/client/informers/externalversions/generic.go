@@ -23,6 +23,7 @@ import (
 
 	v1alpha1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1alpha1"
 	v1beta1 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta1"
+	v1beta2 "github.com/tektoncd/triggers/pkg/apis/triggers/v1beta2"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -78,6 +79,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Triggers().V1beta1().TriggerBindings().Informer()}, nil
 	case v1beta1.SchemeGroupVersion.WithResource("triggertemplates"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Triggers().V1beta1().TriggerTemplates().Informer()}, nil
+
+		// Group=triggers.tekton.dev, Version=v1beta2
+	case v1beta2.SchemeGroupVersion.WithResource("eventlisteners"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Triggers().V1beta2().EventListeners().Informer()}, nil
 
 	}
 

@@ -22,6 +22,7 @@ import (
 	internalinterfaces "github.com/tektoncd/triggers/pkg/client/informers/externalversions/internalinterfaces"
 	v1alpha1 "github.com/tektoncd/triggers/pkg/client/informers/externalversions/triggers/v1alpha1"
 	v1beta1 "github.com/tektoncd/triggers/pkg/client/informers/externalversions/triggers/v1beta1"
+	v1beta2 "github.com/tektoncd/triggers/pkg/client/informers/externalversions/triggers/v1beta2"
 )
 
 // Interface provides access to each of this group's versions.
@@ -30,6 +31,8 @@ type Interface interface {
 	V1alpha1() v1alpha1.Interface
 	// V1beta1 provides access to shared informers for resources in V1beta1.
 	V1beta1() v1beta1.Interface
+	// V1beta2 provides access to shared informers for resources in V1beta2.
+	V1beta2() v1beta2.Interface
 }
 
 type group struct {
@@ -51,4 +54,9 @@ func (g *group) V1alpha1() v1alpha1.Interface {
 // V1beta1 returns a new v1beta1.Interface.
 func (g *group) V1beta1() v1beta1.Interface {
 	return v1beta1.New(g.factory, g.namespace, g.tweakListOptions)
+}
+
+// V1beta2 returns a new v1beta2.Interface.
+func (g *group) V1beta2() v1beta2.Interface {
+	return v1beta2.New(g.factory, g.namespace, g.tweakListOptions)
 }
