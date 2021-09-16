@@ -29,14 +29,15 @@ func (t *Trigger) SetDefaults(ctx context.Context) {
 	if !contexts.IsUpgradeViaDefaulting(ctx) {
 		return
 	}
-	triggerSpecBindingArray(t.Spec.Bindings).defaultBindings()
+	triggerSpecBindingArray(t.Spec.Bindings).DefaultBindings()
 	for _, ti := range t.Spec.Interceptors {
 		ti.defaultInterceptorKind()
 	}
 }
 
 // set default TriggerBinding kind for Bindings in TriggerSpec
-func (t triggerSpecBindingArray) defaultBindings() {
+// TODO(vaikas): exporting so we don't have to copy to v1beta2
+func (t triggerSpecBindingArray) DefaultBindings() {
 	if len(t) > 0 {
 		for _, b := range t {
 			if b.Kind == "" {

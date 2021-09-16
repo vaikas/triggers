@@ -264,6 +264,12 @@ func podSpecMask(in *corev1.PodSpec) *corev1.PodSpec {
 	return out
 }
 
+// TODO(vaikas): Just exporting this for now in case we don't want to
+// hoist other v1beta1 Types to v1beta2. If we do, then remove this.
+func (t *EventListenerTrigger) Validate(ctx context.Context) (errs *apis.FieldError) {
+	return t.validate(ctx)
+}
+
 func (t *EventListenerTrigger) validate(ctx context.Context) (errs *apis.FieldError) {
 	if t.Template == nil && t.TriggerRef == "" {
 		errs = errs.Also(apis.ErrMissingOneOf("template", "triggerRef"))
